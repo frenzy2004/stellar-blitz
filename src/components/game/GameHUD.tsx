@@ -9,6 +9,7 @@ interface GameHUDProps {
   sfxEnabled?: boolean;
   onToggleMusic?: () => void;
   onToggleSFX?: () => void;
+  showWeaponUpgrade?: boolean;
 }
 
 export const GameHUD = ({
@@ -20,6 +21,7 @@ export const GameHUD = ({
   sfxEnabled = true,
   onToggleMusic,
   onToggleSFX,
+  showWeaponUpgrade = false,
 }: GameHUDProps) => {
   return (
     <div className="fixed inset-0 pointer-events-none z-10">
@@ -45,6 +47,18 @@ export const GameHUD = ({
           </div>
         </div>
       </div>
+
+      {/* Weapon Upgrade Notification */}
+      {showWeaponUpgrade && (
+        <div className="absolute top-1/3 left-1/2 -translate-x-1/2 animate-slide-up">
+          <div className="bg-accent/95 backdrop-blur-sm border-2 border-accent rounded-xl px-12 py-6 shadow-glow-fire">
+            <div className="text-center">
+              <div className="text-2xl font-black text-foreground uppercase tracking-widest mb-2 font-orbitron">🔥 WEAPON UPGRADE! 🔥</div>
+              <div className="text-lg font-bold text-foreground/90 font-orbitron">DUAL BLASTERS UNLOCKED</div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Combo Display */}
       {combo > 0 && (

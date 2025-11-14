@@ -17,8 +17,11 @@ export class AsteroidManager {
   private container: PIXI.Container;
   private asteroids: Asteroid[] = [];
   private spawnTimer = 0;
-  private spawnInterval = 800; // ms - MORE ASTEROIDS!
+  private spawnInterval = 800;
+  private baseSpawnInterval = 800;
+  private minSpawnInterval = 300;
   private isSpawning = false;
+  private currentScore = 0;
   private readonly asteroidColors = [
     0xff6b9d, // Hot pink
     0xffd700, // Gold
@@ -150,13 +153,37 @@ export class AsteroidManager {
     };
   }
 
+  public updateDifficulty(score: number) {
+    this.currentScore = score;
+    const difficultyLevel = Math.floor(score / 100);
+    this.spawnInterval = Math.max(
+      this.minSpawnInterval,
+      this.baseSpawnInterval - (difficultyLevel * 80)
+    );
+  }
+
   public update(delta: number) {
     if (this.isSpawning) {
-      this.spawnTimer += delta * 16.67; // Convert to ms
+      this.spawnTimer += delta * 16.67;
       if (this.spawnTimer > this.spawnInterval) {
         this.spawnTimer = 0;
-        const size = Math.random() < 0.5 ? 'small' : Math.random() < 0.7 ? 'medium' : 'large';
-        this.asteroids.push(this.createAsteroid(size as any));
+
+        const asteroidsToSpawn = 1 + Math.floor(this.currentScore / 200);
+
+        for (let i = 0; i < asteroidsToSpawn; i++) {
+          const rand = Math.random();
+          let size: 'small' | 'medium' | 'large';
+
+          if (this.currentScore < 100) {
+            size = rand < 0.6 ? 'small' : rand < 0.9 ? 'medium' : 'large';
+          } else if (this.currentScore < 300) {
+            size = rand < 0.4 ? 'small' : rand < 0.8 ? 'medium' : 'large';
+          } else {
+            size = rand < 0.3 ? 'small' : rand < 0.65 ? 'medium' : 'large';
+          }
+
+          this.asteroids.push(this.createAsteroid(size));
+        }
       }
     }
 

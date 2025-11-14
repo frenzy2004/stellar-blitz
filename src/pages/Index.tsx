@@ -18,6 +18,7 @@ const Index = () => {
   const [gameKey, setGameKey] = useState(0);
   const [musicEnabled, setMusicEnabled] = useState(true);
   const [sfxEnabled, setSfxEnabled] = useState(true);
+  const [showWeaponUpgrade, setShowWeaponUpgrade] = useState(false);
   const gameEngineRef = useRef<GameEngine | null>(null);
 
   // Load high score from localStorage
@@ -83,6 +84,13 @@ const Index = () => {
     }
   }, []);
 
+  const handleWeaponUpgrade = useCallback(() => {
+    setShowWeaponUpgrade(true);
+    setTimeout(() => {
+      setShowWeaponUpgrade(false);
+    }, 3000);
+  }, []);
+
   return (
     <div className="fixed inset-0 bg-gradient-space overflow-hidden">
       {gameState === 'menu' && (
@@ -97,6 +105,7 @@ const Index = () => {
             onLivesUpdate={handleLivesUpdate}
             onComboUpdate={handleComboUpdate}
             onGameOver={handleGameOver}
+            onWeaponUpgrade={handleWeaponUpgrade}
             isPaused={false}
             onEngineReady={handleEngineReady}
           />
@@ -109,6 +118,7 @@ const Index = () => {
             sfxEnabled={sfxEnabled}
             onToggleMusic={handleToggleMusic}
             onToggleSFX={handleToggleSFX}
+            showWeaponUpgrade={showWeaponUpgrade}
           />
         </>
       )}

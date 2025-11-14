@@ -15,7 +15,8 @@ export class Player {
   private readonly speed = 5;
   private readonly friction = 0.9;
   private lastShotTime = 0;
-  private readonly fireRate = 200; // ms between shots
+  private readonly fireRate = 150;
+  public weaponLevel = 1;
 
   constructor(container: PIXI.Container, x: number, y: number) {
     this.x = x;
@@ -108,16 +109,42 @@ export class Player {
 
   public shoot() {
     this.lastShotTime = Date.now();
-    
-    // Calculate direction from rotation
+
     const angle = this.sprite.rotation - Math.PI / 2;
-    
-    return {
-      x: this.x,
-      y: this.y,
-      vx: Math.cos(angle) * 10,
-      vy: Math.sin(angle) * 10,
-    };
+    const projectiles = [];
+
+    if (this.weaponLevel === 1) {
+      projectiles.push({
+        x: this.x,
+        y: this.y,
+        vx: Math.cos(angle) * 12,
+        vy: Math.sin(angle) * 12,
+      });
+    } else if (this.weaponLevel >= 2) {
+      const spreadAngle = Math.PI / 12;
+      const leftAngle = angle - spreadAngle;
+      const rightAngle = angle + spreadAngle;
+
+      projectiles.push({
+        x: this.x,
+        y: this.y,
+        vx: Math.cos(leftAngle) * 12,
+        vy: Math.sin(leftAngle) * 12,
+      });
+
+      projectiles.push({
+        x: this.x,
+        y: this.y,
+        vx: Math.cos(rightAngle) * 12,
+        vy: Math.sin(rightAngle) * 12,
+      });
+    }
+
+    return projectiles;
+  }
+
+  public upgradeWeapon() {
+    this.weaponLevel = 2;
   }
 
   public takeDamage() {

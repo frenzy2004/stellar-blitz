@@ -7,6 +7,7 @@ interface GameCanvasProps {
   onLivesUpdate: (lives: number) => void;
   onComboUpdate: (combo: number, multiplier: number) => void;
   onGameOver: (finalScore: number) => void;
+  onWeaponUpgrade?: () => void;
   isPaused: boolean;
   onEngineReady?: (engine: GameEngine) => void;
 }
@@ -16,6 +17,7 @@ export const GameCanvas = ({
   onLivesUpdate,
   onComboUpdate,
   onGameOver,
+  onWeaponUpgrade,
   isPaused,
   onEngineReady
 }: GameCanvasProps) => {
@@ -47,6 +49,7 @@ export const GameCanvas = ({
         onLivesUpdate,
         onComboUpdate,
         onGameOver,
+        onWeaponUpgrade,
       });
       engineRef.current = engine;
       engine.start();
@@ -69,7 +72,7 @@ export const GameCanvas = ({
       engineRef.current?.destroy();
       appRef.current?.destroy(true);
     };
-  }, [onScoreUpdate, onLivesUpdate, onComboUpdate, onGameOver]);
+  }, [onScoreUpdate, onLivesUpdate, onComboUpdate, onGameOver, onWeaponUpgrade]);
 
   useEffect(() => {
     if (engineRef.current) {

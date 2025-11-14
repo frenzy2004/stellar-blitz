@@ -43,17 +43,36 @@ export class SoundManager {
     const now = this.audioContext.currentTime;
     const gain = this.audioContext.createGain();
 
-    gain.gain.setValueAtTime(0.3, now);
-    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.08);
+    gain.gain.setValueAtTime(0.4, now);
+    gain.gain.linearRampToValueAtTime(0.5, now + 0.01);
+    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.12);
     gain.connect(this.sfxGain);
 
-    const osc1 = this.createOscillator(800, 'square', 0.08);
-    osc1.frequency.exponentialRampToValueAtTime(200, now + 0.08);
+    const osc1 = this.createOscillator(1200, 'sawtooth', 0.12);
+    osc1.frequency.exponentialRampToValueAtTime(150, now + 0.12);
     osc1.connect(gain);
 
-    const osc2 = this.createOscillator(400, 'sawtooth', 0.08);
-    osc2.frequency.exponentialRampToValueAtTime(100, now + 0.08);
+    const osc2 = this.createOscillator(2400, 'sine', 0.12);
+    osc2.frequency.exponentialRampToValueAtTime(300, now + 0.12);
     osc2.connect(gain);
+
+    const osc3 = this.createOscillator(600, 'square', 0.12);
+    osc3.frequency.exponentialRampToValueAtTime(80, now + 0.12);
+    const osc3Gain = this.audioContext.createGain();
+    osc3Gain.gain.setValueAtTime(0.3, now);
+    osc3.connect(osc3Gain);
+    osc3Gain.connect(gain);
+
+    const noise = this.createWhiteNoise(0.02);
+    const noiseGain = this.audioContext.createGain();
+    const filter = this.audioContext.createBiquadFilter();
+    filter.type = 'highpass';
+    filter.frequency.value = 4000;
+    noiseGain.gain.setValueAtTime(0.2, now);
+    noiseGain.gain.exponentialRampToValueAtTime(0.01, now + 0.02);
+    noise.connect(filter);
+    filter.connect(noiseGain);
+    noiseGain.connect(this.sfxGain);
   }
 
   public playHit() {
@@ -134,6 +153,35 @@ export class SoundManager {
     notes.forEach((freq, i) => {
       const osc = this.createOscillator(freq, 'triangle', 0.25, i * 0.25);
       osc.connect(gain);
+    });
+  }
+
+  public playPowerUp() {
+    if (!this.sfxEnabled) return;
+
+    const now = this.audioContext.currentTime;
+    const gain = this.audioContext.createGain();
+
+    gain.gain.setValueAtTime(0.5, now);
+    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.6);
+    gain.connect(this.sfxGain);
+
+    const notes = [262, 330, 392, 523, 659];
+    notes.forEach((freq, i) => {
+      const delay = i * 0.08;
+      const osc = this.createOscillator(freq, 'square', 0.15, delay);
+      const oscGain = this.audioContext.createGain();
+      oscGain.gain.setValueAtTime(0.3, now + delay);
+      oscGain.gain.exponentialRampToValueAtTime(0.01, now + delay + 0.15);
+      osc.connect(oscGain);
+      oscGain.connect(gain);
+
+      const osc2 = this.createOscillator(freq * 2, 'sine', 0.15, delay);
+      const osc2Gain = this.audioContext.createGain();
+      osc2Gain.gain.setValueAtTime(0.2, now + delay);
+      osc2Gain.gain.exponentialRampToValueAtTime(0.01, now + delay + 0.15);
+      osc2.connect(osc2Gain);
+      osc2Gain.connect(gain);
     });
   }
 

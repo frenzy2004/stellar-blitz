@@ -11,6 +11,7 @@ interface GameCallbacks {
   onLivesUpdate: (lives: number) => void;
   onComboUpdate: (combo: number, multiplier: number) => void;
   onGameOver: (finalScore: number) => void;
+  onWeaponUpgrade?: () => void;
 }
 
 export class GameEngine {
@@ -29,6 +30,7 @@ export class GameEngine {
   private multiplier = 1;
   private readonly COMBO_TIMEOUT = 2000;
   private readonly COMBO_FOR_MULTIPLIER = 5;
+  private hasUpgradedWeapon = false;
 
   constructor(app: PIXI.Application, callbacks: GameCallbacks) {
     this.app = app;
@@ -62,14 +64,17 @@ export class GameEngine {
 
     // Handle shooting
     if (input.isShooting && this.player.canShoot()) {
-      const projectile = this.player.shoot();
-      this.projectileManager.addProjectile(projectile);
-      this.particleManager.createMuzzleFlash(projectile.x, projectile.y);
+      const projectiles = this.player.shoot();
+      projectiles.forEach(projectile => {
+        this.projectileManager.addProjectile(projectile);
+        this.particleManager.createMuzzleFlash(projectile.x, projectile.y);
+      });
       this.soundManager.playBlasterShot();
     }
 
     // Update game entities
     this.projectileManager.update(delta, this.app.screen.width, this.app.screen.height);
+    this.asteroidManager.updateDifficulty(this.score);
     this.asteroidManager.update(delta);
     this.particleManager.update(delta);
 
@@ -153,6 +158,15 @@ export class GameEngine {
   private addScore(points: number) {
     this.score += points * this.multiplier;
     this.callbacks.onScoreUpdate(this.score);
+
+    if (this.score >= 100 && !this.hasUpgradedWeapon) {
+      this.hasUpgradedWeapon = true;
+      this.player.upgradeWeapon();
+      this.soundManager.playPowerUp();
+      if (this.callbacks.onWeaponUpgrade) {
+        this.callbacks.onWeaponUpgrade();
+      }
+    }
   }
 
   private addCombo() {
