@@ -1,13 +1,26 @@
-import { Heart } from 'lucide-react';
+import { Heart, Volume2, VolumeX, Music } from 'lucide-react';
 
 interface GameHUDProps {
   score: number;
   lives: number;
   combo: number;
   multiplier: number;
+  musicEnabled?: boolean;
+  sfxEnabled?: boolean;
+  onToggleMusic?: () => void;
+  onToggleSFX?: () => void;
 }
 
-export const GameHUD = ({ score, lives, combo, multiplier }: GameHUDProps) => {
+export const GameHUD = ({
+  score,
+  lives,
+  combo,
+  multiplier,
+  musicEnabled = true,
+  sfxEnabled = true,
+  onToggleMusic,
+  onToggleSFX,
+}: GameHUDProps) => {
   return (
     <div className="fixed inset-0 pointer-events-none z-10">
       {/* Top Bar */}
@@ -50,13 +63,40 @@ export const GameHUD = ({ score, lives, combo, multiplier }: GameHUDProps) => {
         </div>
       )}
 
+      {/* Audio Controls */}
+      <div className="absolute bottom-6 right-6 flex gap-2">
+        {onToggleMusic && (
+          <button
+            onClick={onToggleMusic}
+            className="pointer-events-auto bg-card/80 backdrop-blur-sm border border-primary/30 rounded-lg p-3 hover:bg-card transition-colors shadow-glow-cyan"
+            aria-label="Toggle music"
+          >
+            {musicEnabled ? (
+              <Music className="w-5 h-5 text-primary" />
+            ) : (
+              <Music className="w-5 h-5 text-muted-foreground line-through" />
+            )}
+          </button>
+        )}
+        {onToggleSFX && (
+          <button
+            onClick={onToggleSFX}
+            className="pointer-events-auto bg-card/80 backdrop-blur-sm border border-secondary/30 rounded-lg p-3 hover:bg-card transition-colors shadow-glow-magenta"
+            aria-label="Toggle sound effects"
+          >
+            {sfxEnabled ? (
+              <Volume2 className="w-5 h-5 text-secondary" />
+            ) : (
+              <VolumeX className="w-5 h-5 text-muted-foreground" />
+            )}
+          </button>
+        )}
+      </div>
+
       {/* Controls Hint (mobile) */}
-      <div className="absolute bottom-6 left-0 right-0 flex justify-between px-6 md:hidden">
+      <div className="absolute bottom-6 left-6 md:hidden">
         <div className="bg-card/60 backdrop-blur-sm border border-primary/20 rounded-lg px-4 py-2">
-          <div className="text-xs text-muted-foreground font-orbitron">Touch & Drag to Move</div>
-        </div>
-        <div className="bg-card/60 backdrop-blur-sm border border-secondary/20 rounded-lg px-4 py-2">
-          <div className="text-xs text-muted-foreground font-orbitron">Tap Right to Shoot</div>
+          <div className="text-xs text-muted-foreground font-orbitron">Touch to Move & Shoot</div>
         </div>
       </div>
     </div>

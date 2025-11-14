@@ -4,6 +4,7 @@ import { AsteroidManager } from './entities/AsteroidManager';
 import { ProjectileManager } from './entities/ProjectileManager';
 import { ParticleManager } from './effects/ParticleManager';
 import { InputManager } from './input/InputManager';
+import { SoundManager } from './audio/SoundManager';
 
 interface GameCallbacks {
   onScoreUpdate: (score: number) => void;
@@ -19,6 +20,7 @@ export class GameEngine {
   private projectileManager: ProjectileManager;
   private particleManager: ParticleManager;
   private inputManager: InputManager;
+  private soundManager: SoundManager;
   private callbacks: GameCallbacks;
   private isPaused = false;
   private score = 0;
@@ -32,6 +34,7 @@ export class GameEngine {
     this.app = app;
     this.callbacks = callbacks;
 
+    this.soundManager = new SoundManager();
     this.particleManager = new ParticleManager(app.stage);
     this.projectileManager = new ProjectileManager(app.stage);
     this.asteroidManager = new AsteroidManager(app.stage);
@@ -62,6 +65,7 @@ export class GameEngine {
       const projectile = this.player.shoot();
       this.projectileManager.addProjectile(projectile);
       this.particleManager.createMuzzleFlash(projectile.x, projectile.y);
+      this.soundManager.playBlasterShot();
     }
 
     // Update game entities
@@ -98,16 +102,20 @@ export class GameEngine {
           // Hit!
           this.projectileManager.removeProjectile(projectile);
           this.asteroidManager.destroyAsteroid(asteroid);
-          
+
           // Create explosion
           this.particleManager.createExplosion(asteroid.x, asteroid.y, asteroid.size);
-          
+
           // Update score
           this.addScore(asteroid.points);
-          
+
           // Update combo
           this.addCombo();
-          
+
+          // Play sounds
+          this.soundManager.playHit();
+          this.soundManager.playExplosion(asteroid.size);
+
           break;
         }
       }
@@ -121,9 +129,10 @@ export class GameEngine {
       )) {
         this.asteroidManager.destroyAsteroid(asteroid);
         this.particleManager.createExplosion(asteroid.x, asteroid.y, asteroid.size);
+        this.soundManager.playExplosion(asteroid.size);
         this.player.takeDamage();
         this.resetCombo();
-        
+
         if (this.player.lives <= 0) {
           this.gameOver();
         }
@@ -166,16 +175,23 @@ export class GameEngine {
 
   private gameOver() {
     this.isPaused = true;
+    this.soundManager.playGameOver();
+    this.soundManager.stopBackgroundMusic();
     this.callbacks.onGameOver(this.score);
   }
 
   public start() {
     this.isPaused = false;
     this.asteroidManager.startSpawning();
+    this.soundManager.startBackgroundMusic();
   }
 
   public setPaused(paused: boolean) {
     this.isPaused = paused;
+  }
+
+  public getSoundManager(): SoundManager {
+    return this.soundManager;
   }
 
   public destroy() {
@@ -183,5 +199,6 @@ export class GameEngine {
     this.asteroidManager.destroy();
     this.projectileManager.destroy();
     this.particleManager.destroy();
+    this.soundManager.destroy();
   }
 }

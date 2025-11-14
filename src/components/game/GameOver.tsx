@@ -1,5 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { RotateCcw, Home } from 'lucide-react';
+import { SoundManager } from '@/lib/game/audio/SoundManager';
+import { useEffect, useRef } from 'react';
 
 interface GameOverProps {
   score: number;
@@ -10,6 +12,24 @@ interface GameOverProps {
 
 export const GameOver = ({ score, highScore, onRestart, onMenu }: GameOverProps) => {
   const isNewHighScore = score > highScore;
+  const soundManagerRef = useRef<SoundManager | null>(null);
+
+  useEffect(() => {
+    soundManagerRef.current = new SoundManager();
+    return () => {
+      soundManagerRef.current?.destroy();
+    };
+  }, []);
+
+  const handleRestartClick = () => {
+    soundManagerRef.current?.playUIClick();
+    onRestart();
+  };
+
+  const handleMenuClick = () => {
+    soundManagerRef.current?.playUIClick();
+    onMenu();
+  };
 
   return (
     <div className="fixed inset-0 bg-background/95 backdrop-blur-sm flex items-center justify-center z-30">
@@ -44,7 +64,7 @@ export const GameOver = ({ score, highScore, onRestart, onMenu }: GameOverProps)
         {/* Action Buttons */}
         <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
           <Button
-            onClick={onRestart}
+            onClick={handleRestartClick}
             size="lg"
             className="text-xl px-10 py-6 bg-primary hover:bg-primary-glow text-primary-foreground shadow-glow-cyan hover:shadow-glow-cyan hover:scale-105 transition-all font-orbitron font-bold"
           >
@@ -52,7 +72,7 @@ export const GameOver = ({ score, highScore, onRestart, onMenu }: GameOverProps)
             PLAY AGAIN
           </Button>
           <Button
-            onClick={onMenu}
+            onClick={handleMenuClick}
             size="lg"
             variant="outline"
             className="text-xl px-10 py-6 border-2 border-secondary/50 hover:border-secondary hover:bg-secondary/20 text-foreground hover:shadow-glow-magenta hover:scale-105 transition-all font-orbitron font-bold"

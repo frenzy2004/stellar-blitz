@@ -1,8 +1,9 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { GameCanvas } from '@/components/game/GameCanvas';
 import { GameHUD } from '@/components/game/GameHUD';
 import { GameMenu } from '@/components/game/GameMenu';
 import { GameOver } from '@/components/game/GameOver';
+import type { GameEngine } from '@/lib/game/GameEngine';
 
 type GameState = 'menu' | 'playing' | 'gameOver';
 
@@ -15,6 +16,9 @@ const Index = () => {
   const [finalScore, setFinalScore] = useState(0);
   const [highScore, setHighScore] = useState(0);
   const [gameKey, setGameKey] = useState(0);
+  const [musicEnabled, setMusicEnabled] = useState(true);
+  const [sfxEnabled, setSfxEnabled] = useState(true);
+  const gameEngineRef = useRef<GameEngine | null>(null);
 
   // Load high score from localStorage
   useEffect(() => {
@@ -61,6 +65,24 @@ const Index = () => {
     setMultiplier(newMultiplier);
   }, []);
 
+  const handleEngineReady = useCallback((engine: GameEngine) => {
+    gameEngineRef.current = engine;
+  }, []);
+
+  const handleToggleMusic = useCallback(() => {
+    if (gameEngineRef.current) {
+      const newState = gameEngineRef.current.getSoundManager().toggleMusic();
+      setMusicEnabled(newState);
+    }
+  }, []);
+
+  const handleToggleSFX = useCallback(() => {
+    if (gameEngineRef.current) {
+      const newState = gameEngineRef.current.getSoundManager().toggleSFX();
+      setSfxEnabled(newState);
+    }
+  }, []);
+
   return (
     <div className="fixed inset-0 bg-gradient-space overflow-hidden">
       {gameState === 'menu' && (
@@ -76,12 +98,17 @@ const Index = () => {
             onComboUpdate={handleComboUpdate}
             onGameOver={handleGameOver}
             isPaused={false}
+            onEngineReady={handleEngineReady}
           />
           <GameHUD
             score={score}
             lives={lives}
             combo={combo}
             multiplier={multiplier}
+            musicEnabled={musicEnabled}
+            sfxEnabled={sfxEnabled}
+            onToggleMusic={handleToggleMusic}
+            onToggleSFX={handleToggleSFX}
           />
         </>
       )}

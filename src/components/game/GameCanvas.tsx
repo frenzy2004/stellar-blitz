@@ -8,14 +8,16 @@ interface GameCanvasProps {
   onComboUpdate: (combo: number, multiplier: number) => void;
   onGameOver: (finalScore: number) => void;
   isPaused: boolean;
+  onEngineReady?: (engine: GameEngine) => void;
 }
 
-export const GameCanvas = ({ 
-  onScoreUpdate, 
-  onLivesUpdate, 
-  onComboUpdate, 
+export const GameCanvas = ({
+  onScoreUpdate,
+  onLivesUpdate,
+  onComboUpdate,
   onGameOver,
-  isPaused 
+  isPaused,
+  onEngineReady
 }: GameCanvasProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const appRef = useRef<PIXI.Application | null>(null);
@@ -48,6 +50,10 @@ export const GameCanvas = ({
       });
       engineRef.current = engine;
       engine.start();
+
+      if (onEngineReady) {
+        onEngineReady(engine);
+      }
     })();
 
     const handleResize = () => {

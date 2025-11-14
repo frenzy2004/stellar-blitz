@@ -1,5 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { Play, Info } from 'lucide-react';
+import { SoundManager } from '@/lib/game/audio/SoundManager';
+import { useEffect, useRef } from 'react';
 
 interface GameMenuProps {
   onStart: () => void;
@@ -7,6 +9,20 @@ interface GameMenuProps {
 }
 
 export const GameMenu = ({ onStart, highScore }: GameMenuProps) => {
+  const soundManagerRef = useRef<SoundManager | null>(null);
+
+  useEffect(() => {
+    soundManagerRef.current = new SoundManager();
+    return () => {
+      soundManagerRef.current?.destroy();
+    };
+  }, []);
+
+  const handleStartClick = () => {
+    soundManagerRef.current?.playUIClick();
+    onStart();
+  };
+
   return (
     <div className="fixed inset-0 bg-gradient-space flex items-center justify-center z-20">
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -52,7 +68,7 @@ export const GameMenu = ({ onStart, highScore }: GameMenuProps) => {
         {/* Play Button */}
         <div className="pt-4">
           <Button
-            onClick={onStart}
+            onClick={handleStartClick}
             size="lg"
             className="text-2xl px-12 py-8 bg-primary hover:bg-primary-glow text-primary-foreground shadow-glow-cyan hover:shadow-glow-cyan hover:scale-105 transition-all font-orbitron font-bold"
           >
