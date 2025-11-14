@@ -17,11 +17,35 @@ export class AsteroidManager {
   private container: PIXI.Container;
   private asteroids: Asteroid[] = [];
   private spawnTimer = 0;
-  private spawnInterval = 1500; // ms
+  private spawnInterval = 800; // ms - MORE ASTEROIDS!
   private isSpawning = false;
+  private readonly asteroidColors = [
+    0xff6b9d, // Hot pink
+    0xffd700, // Gold
+    0x00ff88, // Bright green
+    0xff4500, // Orange red
+    0x9d4edd, // Purple
+    0x06ffa5, // Cyan green
+    0xffa500, // Orange
+    0xff1493, // Deep pink
+  ];
 
   constructor(container: PIXI.Container) {
     this.container = container;
+  }
+
+  private darkenColor(color: number): number {
+    const r = ((color >> 16) & 0xff) * 0.5;
+    const g = ((color >> 8) & 0xff) * 0.5;
+    const b = (color & 0xff) * 0.5;
+    return (r << 16) | (g << 8) | b;
+  }
+
+  private lightenColor(color: number): number {
+    const r = Math.min(255, ((color >> 16) & 0xff) * 1.3);
+    const g = Math.min(255, ((color >> 8) & 0xff) * 1.3);
+    const b = Math.min(255, (color & 0xff) * 1.3);
+    return (r << 16) | (g << 8) | b;
   }
 
   private createAsteroid(size: 'small' | 'medium' | 'large', x?: number, y?: number): Asteroid {
@@ -64,19 +88,48 @@ export class AsteroidManager {
 
     const sprite = new PIXI.Graphics();
     
-    // Draw irregular asteroid shape
-    const points = 8;
-    sprite.moveTo(config.radius, 0);
-    for (let i = 1; i <= points; i++) {
+    // Pick random color
+    const color = this.asteroidColors[Math.floor(Math.random() * this.asteroidColors.length)];
+    const darkerColor = this.darkenColor(color);
+    
+    // Draw irregular asteroid shape with more detail
+    const points = 10 + Math.floor(Math.random() * 5);
+    const vertices: { x: number; y: number }[] = [];
+    
+    for (let i = 0; i < points; i++) {
       const angle = (i / points) * Math.PI * 2;
-      const variance = 0.7 + Math.random() * 0.3;
+      const variance = 0.6 + Math.random() * 0.4;
       const r = config.radius * variance;
-      const px = Math.cos(angle) * r;
-      const py = Math.sin(angle) * r;
-      sprite.lineTo(px, py);
+      vertices.push({
+        x: Math.cos(angle) * r,
+        y: Math.sin(angle) * r,
+      });
     }
-    sprite.fill({ color: 0x666666 });
-    sprite.stroke({ color: 0x888888, width: 2 });
+    
+    // Draw filled shape
+    sprite.moveTo(vertices[0].x, vertices[0].y);
+    for (let i = 1; i < vertices.length; i++) {
+      sprite.lineTo(vertices[i].x, vertices[i].y);
+    }
+    sprite.lineTo(vertices[0].x, vertices[0].y);
+    sprite.fill({ color });
+    
+    // Add bright outline
+    sprite.stroke({ color: this.lightenColor(color), width: 2 });
+    
+    // Add some crater details
+    const craters = Math.floor(Math.random() * 3) + 1;
+    for (let i = 0; i < craters; i++) {
+      const angle = Math.random() * Math.PI * 2;
+      const dist = Math.random() * config.radius * 0.5;
+      const craterSize = 2 + Math.random() * 4;
+      sprite.circle(
+        Math.cos(angle) * dist,
+        Math.sin(angle) * dist,
+        craterSize
+      );
+      sprite.fill({ color: darkerColor, alpha: 0.5 });
+    }
     
     sprite.x = x!;
     sprite.y = y!;
