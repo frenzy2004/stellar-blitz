@@ -27,16 +27,39 @@ export class Player {
   private createSprite(): PIXI.Graphics {
     const graphics = new PIXI.Graphics();
     
-    // Ship body (triangle)
+    // Outer glow
+    graphics.moveTo(0, -18);
+    graphics.lineTo(-12, 12);
+    graphics.lineTo(12, 12);
+    graphics.lineTo(0, -18);
+    graphics.fill({ color: 0x00ffff, alpha: 0.3 });
+    
+    // Main ship body (triangle)
     graphics.moveTo(0, -15);
     graphics.lineTo(-10, 10);
     graphics.lineTo(10, 10);
     graphics.lineTo(0, -15);
     graphics.fill({ color: 0x00ffff });
-    graphics.stroke({ color: 0x00ffff, width: 2 });
+    graphics.stroke({ color: 0x00ffff, width: 3 });
     
-    // Cockpit glow
-    graphics.circle(0, 0, 4);
+    // Inner detail lines
+    graphics.moveTo(0, -15);
+    graphics.lineTo(0, 5);
+    graphics.stroke({ color: 0x00cccc, width: 1 });
+    
+    // Wing details
+    graphics.moveTo(-8, 5);
+    graphics.lineTo(-5, 5);
+    graphics.stroke({ color: 0x00cccc, width: 1 });
+    
+    graphics.moveTo(8, 5);
+    graphics.lineTo(5, 5);
+    graphics.stroke({ color: 0x00cccc, width: 1 });
+    
+    // Cockpit glow (brighter)
+    graphics.circle(0, 0, 5);
+    graphics.fill({ color: 0xffffff });
+    graphics.circle(0, 0, 3);
     graphics.fill({ color: 0x00ffff });
     
     graphics.x = this.x;
